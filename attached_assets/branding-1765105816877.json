@@ -1,0 +1,112 @@
+{
+  "colorScheme": "dark",
+  "fonts": [
+    {
+      "family": "Poppins",
+      "role": "body"
+    },
+    {
+      "family": "Texgyreadventor",
+      "role": "display"
+    },
+    {
+      "family": "Arial",
+      "role": "body"
+    }
+  ],
+  "colors": {
+    "primary": "#030712",
+    "accent": "#0000EE",
+    "background": "#0C0C0C",
+    "textPrimary": "#0C0C0C",
+    "link": "#0000EE"
+  },
+  "typography": {
+    "fontFamilies": {
+      "primary": "Poppins",
+      "heading": "Texgyreadventor"
+    },
+    "fontStacks": {
+      "heading": [
+        "Texgyreadventor",
+        "Arial",
+        "sans-serif"
+      ],
+      "body": [
+        "Poppins",
+        "sans-serif"
+      ],
+      "paragraph": [
+        "Poppins",
+        "sans-serif"
+      ]
+    },
+    "fontSizes": {
+      "h1": "92.16px",
+      "h2": "92.16px",
+      "body": "19.2px"
+    }
+  },
+  "spacing": {
+    "baseUnit": 8,
+    "borderRadius": "0px"
+  },
+  "components": {
+    "input": {
+      "borderColor": "#CCCCCC",
+      "borderRadius": "0px"
+    },
+    "buttonPrimary": {
+      "background": "#0C0C0C",
+      "textColor": "#FFFFFF",
+      "borderColor": "#FFFFFF",
+      "borderRadius": "3932.16px",
+      "shadow": "none"
+    },
+    "buttonSecondary": {
+      "background": "#FFFFFF",
+      "textColor": "#0C0C0C",
+      "borderColor": "#FFFFFF",
+      "borderRadius": "3932.16px",
+      "shadow": "none"
+    }
+  },
+  "images": {
+    "logo": "File saved at: attached_assets/logo.svg",
+    "favicon": "File saved at: attached_assets/favicon.png",
+    "ogImage": "File saved at: attached_assets/ogImage.png"
+  },
+  "__framework_hints": [],
+  "__llm_logo_reasoning": {
+    "selectedIndex": 0,
+    "reasoning": "Logo #0 matches the brand name 'JoyJam' and is located in the header, linking to the homepage, which is a strong indicator of it being the main brand logo.",
+    "confidence": 0.9
+  },
+  "__llm_button_reasoning": {
+    "primary": {
+      "index": 3,
+      "text": "Google Play",
+      "reasoning": "Button #3 has a vibrant background color (#0C0C0C) with a border, making it stand out as a primary call-to-action. It also has action-oriented text ('Google Play'), which aligns with typical primary button characteristics."
+    },
+    "secondary": {
+      "index": 7,
+      "text": "Google Play",
+      "reasoning": "Button #7 has a different background color (#FFFFFF) compared to the primary button, making it suitable as a secondary call-to-action. It is less prominent and has a more subtle design, which is typical for secondary buttons."
+    },
+    "confidence": 0.95
+  },
+  "personality": {
+    "tone": "modern",
+    "energy": "medium",
+    "targetAudience": "music enthusiasts and app users"
+  },
+  "designSystem": {
+    "framework": "custom",
+    "componentLibrary": null
+  },
+  "confidence": {
+    "buttons": 0.95,
+    "colors": 0.9,
+    "overall": 0.925
+  }
+}
