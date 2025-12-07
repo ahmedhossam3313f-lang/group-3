@@ -11,9 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/image-upload";
 import { AdminLayout } from "./index";
-import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/api";
-import type { Artist } from "@shared/schema";
+import { queryClient, queryFunctions } from "@/lib/queryClient";
+import { db, Artist } from "@/lib/database";
 
 export default function AdminArtists() {
   const { toast } = useToast();
@@ -30,15 +29,16 @@ export default function AdminArtists() {
   });
 
   const { data: artists = [] } = useQuery<Artist[]>({
-    queryKey: ["/api/artists"],
+    queryKey: ["artists"],
+    queryFn: queryFunctions.artists,
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/artists/${id}`);
+      return db.artists.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/artists"] });
+      queryClient.invalidateQueries({ queryKey: ["artists"] });
       toast({
         title: "Artist deleted",
         description: "The artist has been removed.",

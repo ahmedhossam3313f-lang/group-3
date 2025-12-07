@@ -11,9 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/image-upload";
 import { AdminLayout } from "./index";
-import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/api";
-import type { Playlist } from "@shared/schema";
+import { queryClient, queryFunctions } from "@/lib/queryClient";
+import { db, Playlist } from "@/lib/database";
 
 export default function AdminPlaylists() {
   const { toast } = useToast();
@@ -29,15 +28,16 @@ export default function AdminPlaylists() {
   });
 
   const { data: playlists = [] } = useQuery<Playlist[]>({
-    queryKey: ["/api/playlists"],
+    queryKey: ["playlists"],
+    queryFn: queryFunctions.playlists,
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/playlists/${id}`);
+      return db.playlists.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/playlists"] });
+      queryClient.invalidateQueries({ queryKey: ["playlists"] });
       toast({
         title: "Playlist deleted",
         description: "The playlist has been removed.",

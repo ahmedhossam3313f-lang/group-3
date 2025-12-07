@@ -13,9 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/image-upload";
 import { VideoUpload } from "@/components/video-upload";
 import { AdminLayout } from "./index";
-import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/api";
-import type { Video } from "@shared/schema";
+import { queryClient, queryFunctions } from "@/lib/queryClient";
+import { db, Video } from "@/lib/database";
 
 export default function AdminVideos() {
   const { toast } = useToast();
@@ -33,15 +32,16 @@ export default function AdminVideos() {
   });
 
   const { data: videos = [] } = useQuery<Video[]>({
-    queryKey: ["/api/videos"],
+    queryKey: ["videos"],
+    queryFn: queryFunctions.videos,
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/videos/${id}`);
+      return db.videos.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
+      queryClient.invalidateQueries({ queryKey: ["videos"] });
       toast({
         title: "Video deleted",
         description: "The video has been removed.",

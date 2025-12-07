@@ -37,10 +37,9 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/api";
+import { queryClient, queryFunctions } from "@/lib/queryClient";
+import { db, Contact } from "@/lib/database";
 import { useToast } from "@/hooks/use-toast";
-import type { Contact } from "@shared/schema";
 
 const demoContacts: Partial<Contact>[] = [
   {
@@ -51,7 +50,7 @@ const demoContacts: Partial<Contact>[] = [
     subject: "Demo Submission - Electronic Producer",
     message: "Hi, I'm an electronic music producer from Berlin looking for label representation...",
     status: "new",
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: "2",
@@ -61,7 +60,7 @@ const demoContacts: Partial<Contact>[] = [
     subject: "Interview Request for Feature Article",
     message: "I'm a journalist at Electronic Music Magazine and would love to interview...",
     status: "new",
-    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: "3",
@@ -71,7 +70,7 @@ const demoContacts: Partial<Contact>[] = [
     subject: "Booking Inquiry - NYC Club Night",
     message: "We're organizing a club night in NYC and would like to book one of your artists...",
     status: "read",
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: "4",
@@ -81,7 +80,7 @@ const demoContacts: Partial<Contact>[] = [
     subject: "Partnership Opportunity",
     message: "Our brand is interested in partnering with GroupTherapy for an upcoming campaign...",
     status: "archived",
-    createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000),
+    createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
   },
 ];
 
@@ -94,7 +93,8 @@ export default function AdminContacts() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: contacts } = useQuery<Contact[]>({
-    queryKey: ["/api/contacts"],
+    queryKey: ["contacts"],
+    queryFn: queryFunctions.contacts,
   });
 
   const displayContacts = contacts?.length ? contacts : demoContacts;
@@ -111,20 +111,20 @@ export default function AdminContacts() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      return apiRequest("PATCH", `/api/contacts/${id}`, { status });
+      return db.contacts.update(id, { status });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+      queryClient.invalidateQueries({ queryKey: ["contacts"] });
       toast({ title: "Status updated" });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/contacts/${id}`);
+      return db.contacts.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+      queryClient.invalidateQueries({ queryKey: ["contacts"] });
       toast({ title: "Contact deleted" });
       setDeleteId(null);
     },

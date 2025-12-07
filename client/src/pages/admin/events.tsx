@@ -47,10 +47,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/api";
+import { queryClient, queryFunctions } from "@/lib/queryClient";
+import { db, Event } from "@/lib/database";
 import { useToast } from "@/hooks/use-toast";
-import type { Event } from "@shared/schema";
 
 const demoEvents: Partial<Event>[] = [
   {
@@ -59,7 +58,7 @@ const demoEvents: Partial<Event>[] = [
     venue: "Warehouse 23",
     city: "London",
     country: "UK",
-    date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     ticketPrice: "25",
     published: true,
     featured: true,
@@ -70,7 +69,7 @@ const demoEvents: Partial<Event>[] = [
     venue: "Victoria Park",
     city: "Manchester",
     country: "UK",
-    date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+    date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
     ticketPrice: "45",
     published: true,
     featured: false,
@@ -81,7 +80,7 @@ const demoEvents: Partial<Event>[] = [
     venue: "The Underground",
     city: "Berlin",
     country: "Germany",
-    date: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000),
+    date: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
     ticketPrice: "20",
     published: false,
     featured: false,
@@ -95,7 +94,8 @@ export default function AdminEvents() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: events } = useQuery<Event[]>({
-    queryKey: ["/api/events"],
+    queryKey: ["events"],
+    queryFn: queryFunctions.events,
   });
 
   const displayEvents = events?.length ? events : demoEvents;
@@ -113,20 +113,20 @@ export default function AdminEvents() {
 
   const togglePublishMutation = useMutation({
     mutationFn: async ({ id, published }: { id: string; published: boolean }) => {
-      return apiRequest("PATCH", `/api/events/${id}`, { published });
+      return db.events.update(id, { published });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
       toast({ title: "Event updated" });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/events/${id}`);
+      return db.events.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
       toast({ title: "Event deleted" });
       setDeleteId(null);
     },

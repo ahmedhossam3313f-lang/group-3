@@ -46,10 +46,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/api";
+import { queryClient, queryFunctions } from "@/lib/queryClient";
+import { db, Post } from "@/lib/database";
 import { useToast } from "@/hooks/use-toast";
-import type { Post } from "@shared/schema";
 
 const demoPosts: Partial<Post>[] = [
   {
@@ -57,7 +56,7 @@ const demoPosts: Partial<Post>[] = [
     title: "GroupTherapy Announces Summer Festival 2024 Lineup",
     category: "events",
     authorName: "GroupTherapy Team",
-    publishedAt: new Date("2024-03-01"),
+    publishedAt: new Date("2024-03-01").toISOString(),
     published: true,
     featured: true,
   },
@@ -66,7 +65,7 @@ const demoPosts: Partial<Post>[] = [
     title: "Luna Wave Drops New Album 'Midnight Sessions'",
     category: "releases",
     authorName: "Sarah Chen",
-    publishedAt: new Date("2024-02-28"),
+    publishedAt: new Date("2024-02-28").toISOString(),
     published: true,
     featured: false,
   },
@@ -75,7 +74,7 @@ const demoPosts: Partial<Post>[] = [
     title: "Behind the Scenes: GroupTherapy Radio Studio",
     category: "features",
     authorName: "Marcus Rivera",
-    publishedAt: null,
+    publishedAt: undefined,
     published: false,
     featured: false,
   },
@@ -89,7 +88,8 @@ export default function AdminPosts() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: posts } = useQuery<Post[]>({
-    queryKey: ["/api/posts"],
+    queryKey: ["posts"],
+    queryFn: queryFunctions.posts,
   });
 
   const displayPosts = posts?.length ? posts : demoPosts;
@@ -106,20 +106,20 @@ export default function AdminPosts() {
 
   const togglePublishMutation = useMutation({
     mutationFn: async ({ id, published }: { id: string; published: boolean }) => {
-      return apiRequest("PATCH", `/api/posts/${id}`, { published });
+      return db.posts.update(id, { published });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
       toast({ title: "Post updated" });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/posts/${id}`);
+      return db.posts.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
       toast({ title: "Post deleted" });
       setDeleteId(null);
     },

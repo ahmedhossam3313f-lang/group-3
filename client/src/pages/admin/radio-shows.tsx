@@ -13,9 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/image-upload";
 import { AudioUpload } from "@/components/audio-upload";
 import { AdminLayout } from "./index";
-import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/api";
-import type { RadioShow } from "@shared/schema";
+import { queryClient, queryFunctions } from "@/lib/queryClient";
+import { db, RadioShow } from "@/lib/database";
 
 const daysOfWeek = [
   { value: 0, label: "Sunday" },
@@ -45,15 +44,16 @@ export default function AdminRadioShows() {
   });
 
   const { data: shows = [] } = useQuery<RadioShow[]>({
-    queryKey: ["/api/radio/shows"],
+    queryKey: ["radioShows"],
+    queryFn: queryFunctions.radioShows,
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/radio/shows/${id}`);
+      return db.radioShows.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/radio/shows"] });
+      queryClient.invalidateQueries({ queryKey: ["radioShows"] });
       toast({
         title: "Show deleted",
         description: "The radio show has been removed.",

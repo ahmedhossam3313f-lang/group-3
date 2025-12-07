@@ -47,10 +47,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/api";
+import { queryClient, queryFunctions } from "@/lib/queryClient";
+import { db, Release } from "@/lib/database";
 import { useToast } from "@/hooks/use-toast";
-import type { Release } from "@shared/schema";
 
 const demoReleases: Partial<Release>[] = [
   {
@@ -62,7 +61,7 @@ const demoReleases: Partial<Release>[] = [
     genres: ["Electronic", "House"],
     published: true,
     featured: true,
-    releaseDate: new Date("2024-01-15"),
+    releaseDate: "2024-01-15",
   },
   {
     id: "2",
@@ -73,7 +72,7 @@ const demoReleases: Partial<Release>[] = [
     genres: ["Techno"],
     published: true,
     featured: false,
-    releaseDate: new Date("2024-02-01"),
+    releaseDate: "2024-02-01",
   },
   {
     id: "3",
@@ -84,7 +83,7 @@ const demoReleases: Partial<Release>[] = [
     genres: ["Deep House"],
     published: false,
     featured: false,
-    releaseDate: new Date("2024-03-10"),
+    releaseDate: "2024-03-10",
   },
 ];
 
@@ -96,7 +95,8 @@ export default function AdminReleases() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: releases, isLoading } = useQuery<Release[]>({
-    queryKey: ["/api/releases"],
+    queryKey: ["releases"],
+    queryFn: queryFunctions.releases,
   });
 
   const displayReleases = releases?.length ? releases : demoReleases;
@@ -115,20 +115,20 @@ export default function AdminReleases() {
 
   const togglePublishMutation = useMutation({
     mutationFn: async ({ id, published }: { id: string; published: boolean }) => {
-      return apiRequest("PATCH", `/api/releases/${id}`, { published });
+      return db.releases.update(id, { published });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/releases"] });
+      queryClient.invalidateQueries({ queryKey: ["releases"] });
       toast({ title: "Release updated" });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/releases/${id}`);
+      return db.releases.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/releases"] });
+      queryClient.invalidateQueries({ queryKey: ["releases"] });
       toast({ title: "Release deleted" });
       setDeleteId(null);
     },
