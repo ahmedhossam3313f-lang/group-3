@@ -68,6 +68,32 @@ export default function AdminRadioShows() {
     },
   });
 
+  const saveMutation = useMutation({
+    mutationFn: async (data: { isEdit: boolean; id?: string; show: Partial<RadioShow> }) => {
+      if (data.isEdit && data.id) {
+        return db.radioShows.update(data.id, data.show);
+      } else {
+        return db.radioShows.create(data.show);
+      }
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["radioShows"] });
+      toast({
+        title: variables.isEdit ? "Show updated" : "Show created",
+        description: variables.isEdit ? "The radio show has been updated." : "The radio show has been created.",
+      });
+      setIsDialogOpen(false);
+      resetForm();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save show",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleEdit = (show: RadioShow) => {
     setEditingShow(show);
     setFormData({
@@ -92,12 +118,28 @@ export default function AdminRadioShows() {
   };
 
   const handleSave = () => {
-    toast({
-      title: editingShow ? "Show updated" : "Show created",
-      description: editingShow ? "The radio show has been updated." : "The radio show has been created.",
+    const slug = formData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const showData: Partial<RadioShow> = {
+      title: formData.title,
+      slug,
+      hostName: formData.hostName,
+      description: formData.description,
+      hostImageUrl: formData.hostImageUrl,
+      coverUrl: formData.coverUrl,
+      recordedUrl: formData.recordedUrl,
+      dayOfWeek: formData.dayOfWeek,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      timezone: formData.timezone,
+      isLive: editingShow?.isLive ?? false,
+      published: editingShow?.published ?? true,
+    };
+    
+    saveMutation.mutate({
+      isEdit: !!editingShow,
+      id: editingShow?.id,
+      show: showData,
     });
-    setIsDialogOpen(false);
-    resetForm();
   };
 
   const resetForm = () => {

@@ -53,6 +53,32 @@ export default function AdminArtists() {
     },
   });
 
+  const saveMutation = useMutation({
+    mutationFn: async (data: { isEdit: boolean; id?: string; artist: Partial<Artist> }) => {
+      if (data.isEdit && data.id) {
+        return db.artists.update(data.id, data.artist);
+      } else {
+        return db.artists.create(data.artist);
+      }
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["artists"] });
+      toast({
+        title: variables.isEdit ? "Artist updated" : "Artist created",
+        description: variables.isEdit ? "The artist has been updated." : "The artist has been created.",
+      });
+      setIsDialogOpen(false);
+      resetForm();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save artist",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleEdit = (artist: Artist) => {
     setEditingArtist(artist);
     setFormData({
@@ -74,12 +100,25 @@ export default function AdminArtists() {
   };
 
   const handleSave = () => {
-    toast({
-      title: editingArtist ? "Artist updated" : "Artist created",
-      description: editingArtist ? "The artist has been updated." : "The artist has been created.",
+    const slug = formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const artistData: Partial<Artist> = {
+      name: formData.name,
+      slug,
+      bio: formData.bio,
+      imageUrl: formData.imageUrl,
+      featured: formData.featured,
+      socialLinks: {
+        spotify: formData.spotify || undefined,
+        instagram: formData.instagram || undefined,
+        soundcloud: formData.soundcloud || undefined,
+      },
+    };
+    
+    saveMutation.mutate({
+      isEdit: !!editingArtist,
+      id: editingArtist?.id,
+      artist: artistData,
     });
-    setIsDialogOpen(false);
-    resetForm();
   };
 
   const resetForm = () => {

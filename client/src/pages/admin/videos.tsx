@@ -56,6 +56,32 @@ export default function AdminVideos() {
     },
   });
 
+  const saveMutation = useMutation({
+    mutationFn: async (data: { isEdit: boolean; id?: string; video: Partial<Video> }) => {
+      if (data.isEdit && data.id) {
+        return db.videos.update(data.id, data.video);
+      } else {
+        return db.videos.create(data.video);
+      }
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["videos"] });
+      toast({
+        title: variables.isEdit ? "Video updated" : "Video created",
+        description: variables.isEdit ? "The video has been updated." : "The video has been created.",
+      });
+      setIsDialogOpen(false);
+      resetForm();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save video",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleEdit = (video: Video) => {
     setEditingVideo(video);
     setFormData({
@@ -78,12 +104,25 @@ export default function AdminVideos() {
   };
 
   const handleSave = () => {
-    toast({
-      title: editingVideo ? "Video updated" : "Video created",
-      description: editingVideo ? "The video has been updated." : "The video has been created.",
+    const slug = formData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const videoData: Partial<Video> = {
+      title: formData.title,
+      slug,
+      artistName: formData.artistName,
+      youtubeId: formData.youtubeId,
+      videoUrl: formData.videoUrl,
+      thumbnailUrl: formData.thumbnailUrl,
+      category: formData.category,
+      description: formData.description,
+      featured: formData.featured,
+      published: true,
+    };
+    
+    saveMutation.mutate({
+      isEdit: !!editingVideo,
+      id: editingVideo?.id,
+      video: videoData,
     });
-    setIsDialogOpen(false);
-    resetForm();
   };
 
   const resetForm = () => {

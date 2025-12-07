@@ -52,6 +52,32 @@ export default function AdminPlaylists() {
     },
   });
 
+  const saveMutation = useMutation({
+    mutationFn: async (data: { isEdit: boolean; id?: string; playlist: Partial<Playlist> }) => {
+      if (data.isEdit && data.id) {
+        return db.playlists.update(data.id, data.playlist);
+      } else {
+        return db.playlists.create(data.playlist);
+      }
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["playlists"] });
+      toast({
+        title: variables.isEdit ? "Playlist updated" : "Playlist created",
+        description: variables.isEdit ? "The playlist has been updated." : "The playlist has been created.",
+      });
+      setIsDialogOpen(false);
+      resetForm();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save playlist",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleEdit = (playlist: Playlist) => {
     setEditingPlaylist(playlist);
     setFormData({
@@ -72,12 +98,24 @@ export default function AdminPlaylists() {
   };
 
   const handleSave = () => {
-    toast({
-      title: editingPlaylist ? "Playlist updated" : "Playlist created",
-      description: editingPlaylist ? "The playlist has been updated." : "The playlist has been created.",
+    const slug = formData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const playlistData: Partial<Playlist> = {
+      title: formData.title,
+      slug,
+      description: formData.description,
+      coverUrl: formData.coverUrl,
+      spotifyUrl: formData.spotifyUrl,
+      spotifyPlaylistId: formData.spotifyPlaylistId,
+      featured: formData.featured,
+      published: editingPlaylist?.published ?? true,
+      trackCount: editingPlaylist?.trackCount ?? 0,
+    };
+    
+    saveMutation.mutate({
+      isEdit: !!editingPlaylist,
+      id: editingPlaylist?.id,
+      playlist: playlistData,
     });
-    setIsDialogOpen(false);
-    resetForm();
   };
 
   const resetForm = () => {
